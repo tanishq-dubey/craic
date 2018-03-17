@@ -1,0 +1,141 @@
+32 Bit instructions:
+
+0      7                      31
++------+-----------------------+
+|OPCODE|        VAR ARGS       |
++------+-----------------------+
+
+8  Bits Opcode
+24 Bits Argument
+
+Register Based Instructions:
+OPCODE - DEST, SRC1, SRC2
+
+
+Instructons:
+
+00000000 - ADD => Add two register values into a third register
+DEST <- SRC1 + SRC2
+00000000 XXXXDDDD XXXXRRRR XXXXSSSS
+ADD R12, R1, R3
+NOTES: 
+    Subtraction is done by inverting SRC2 in a previous step
+        e.g. NEG SRC2
+             ADD R12, R1, R3 => DEST <- SRC1 - SRC2
+
+
+00000001 - ADD => Add a 16-bit immediate value and a register
+SRC1 <- SRC1 + IMM16
+00000001 IIIIIIII IIIIIIII XXXXSSSS
+ADD R12, -230
+NOTES:
+    The IMM16 value is intreperted as a 2s compliment value, and so subtraction
+        can also be performed
+
+
+00000010 - NEG => Perform a 2s compliment negation on a single register
+SRC1 <- -1 * SRC1
+00000010 XXXXXXXX XXXXXXXX XXXXSSSS
+NEG R12
+
+
+00000011 - STR => Store a register into memory, using a register as the address
+M[SRC2] <- SRC1
+00000011 XXXXXXXX XXXXRRRR XXXXSSSS
+STR R1, R3
+
+
+00000100 - STI => Store a register into memory, using a register as the first address, and derefrencing
+    the memory location as the second address
+M[M[SRC2]] <- SRC1
+00000100 XXXXXXXX XXXXRRRR XXXXSSSS
+STI R1, R3
+
+
+00000101 - LDR => Load data from memory into a register, using a register as the address
+SRC1 <- M[SRC2]
+00000101 XXXXXXXX XXXXRRRR XXXXSSSS
+LDR R1, R3
+
+
+00000110 - LDI => Load data from memory, using a register as the first address, and dereferencing
+    the memory location as the second address
+SRC1 <- M[M[SRC2]]
+00000110 XXXXXXXX XXXXRRRR XXXXSSSS
+LDI R1, R3
+
+
+//TODO:
+00000111 - LEA => Stores the effective address of the immedieate value and PC in the DEST register
+DEST <- PC + IMM16
+00000111 XXXXDDDD IIIIIIII IIIIIIII
+LEA R12, -40
+
+
+00001000 - PUSH => Inserts a value from a register into the memory location of RSP (R16) and increments RSP by 4
+M[RSP] <- SRC1
+RSP <- RSP + 4
+00001000 XXXXXXXX XXXXXXXX XXXXXXXX
+PUSH R12
+
+
+00001001 - POP => Retrives a value from memory at RSP (R16) into a register and decrements RSP by 4
+SRC1 <- M[RSP]
+RSP <- RSP - 4
+00001001 XXXXXXXX XXXXXXXX XXXXXXXX
+POP R12
+
+
+00001010 - NOT => Performs a NOT operation on a register
+SRC1 <- NOT(SRC1)
+00001010 XXXXXXXX XXXXRRRR XXXXSSSS
+NOT R12
+
+
+00001011 - AND => Performs a AND operation on two registers, storing in the destination
+DEST <- SRC1 AND SRC2
+00001011 XXXXDDDD XXXXRRRR XXXXSSSS
+AND R12, R1, R3
+
+
+00001100 - OR => Performs a OR operation on two registers, storing in the destination
+DEST <- SRC1 OR SRC2
+00001100 XXXXDDDD XXXXRRRR XXXXSSSS
+OR R12, R1, R3
+
+
+00001101 - XOR => Performs a XOR operation on two registers, storing in the destination
+DEST <- SRC1 XOR SRC2
+00001101 XXXXDDDD XXXXRRRR XXXXSSSS
+XOR R12, R1, R3
+
+
+00001110 - JMP => Loads the PC with a memory address specified by the current PC, register value, and offset.
+PC <- PC + SRC1 + IMM16
+00001110 IIIIIIII IIIIIIII XXXXSSSS
+JMP R12, -40
+NOTES:
+	This value may overflow! As a 16 bit value is being added to a 32-bit value.
+
+
+00001111 - J (Conditional) => Loads the PC with a memory address specified by the current PC, register value, and offset, only if condition codes match.
+PC <- PC + SRC1 + IMM16
+00001111 IIIIIIII IIIIIIII CCCXSSSS
+Jnz R12, -40
+NOTES:
+	This value may overflow! As a 16 bit value is being added to a 32-bit value.
+
+
+00010000 - CALL => Loads the PC with a memory address specified by the current PC, register value, and offset. Also pushes the PC value onto the stack before jumping.
+M[RSP] <- PC
+RSP <- RSP + 4
+PC <- PC + SRC1 + IMM16
+00010000 IIIIIIII IIIIIIII XXXXSSSS
+
+
+00010001 - RET => Loads the PC with a memory address specified by the value at the top of the stack. Also decrements the stack pointer.
+PC <- M[RSP]
+RSP <- RSP - 4
+00010001 XXXXXXXX XXXXXXXX XXXXXXXX
+NOTES:
+	This means the user is responsible for cleaning up the stack and then using RET.

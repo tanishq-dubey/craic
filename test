@@ -1,0 +1,30 @@
+Math
+ADD
+ADDI
+NEG
+
+Memory Store
+STR
+STI
+
+Memory Load
+LDR
+LDI
+LEA
+
+Stack Operations
+PUSH
+POP
+
+Bitwise Operations
+NOT
+AND
+OR
+XOR
+
+Control Flow
+JMP
+J Conditional (NZP)
+CALL
+LEAVE(?)
+RET
